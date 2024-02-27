@@ -1,0 +1,28 @@
+# depslib dependency file v1.0
+1683240664 source:c:\users\astro\desktop\chc\main.cpp
+	<iostream>
+	<vector>
+	<utility>
+	<algorithm>
+	<random>
+	<cmath>
+	<ctime>
+
+1683558676 source:c:\users\astro\desktop\escalade complet\main.cpp
+	<iostream>
+	<vector>
+	<utility>
+	<algorithm>
+	<random>
+	<cmath>
+	<ctime>
+
+1683558676 source:c:\users\astro\desktop\miniprojet02_aymane_kabba\escalade complet\main.cpp
+	<iostream>
+	<vector>
+	<utility>
+	<algorithm>
+	<random>
+	<cmath>
+	<ctime>
+

@@ -1,0 +1,22 @@
+# depslib dependency file v1.0
+1683380247 source:c:\users\astro\desktop\ga\main.cpp
+	<iostream>
+	<cmath>
+	<vector>
+	<ctime>
+	<algorithm>
+
+1683562853 source:c:\users\astro\desktop\genetique\main.cpp
+	<iostream>
+	<cmath>
+	<vector>
+	<ctime>
+	<algorithm>
+
+1683562853 source:c:\users\astro\desktop\miniprojet02_aymane_kabba\genetique\main.cpp
+	<iostream>
+	<cmath>
+	<vector>
+	<ctime>
+	<algorithm>
+

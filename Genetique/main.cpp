@@ -1,0 +1,178 @@
+#include <iostream>
+#include <cmath>
+#include <vector>
+#include <ctime>
+#include <algorithm>
+
+using namespace std;
+const int POPULATION_SIZE = 100;
+
+// Define the TSP instance
+vector<pair<int, int>> berlin52 = {
+        {565, 575}, {25, 185}, {345, 750}, {945, 685}, {845, 655}, {880, 660},
+        {25, 230}, {525, 1000}, {580, 1175}, {650, 1130}, {1605, 620},
+        {1220, 580}, {1465, 200}, {1530, 5}, {845, 680}, {725, 370},
+        {145, 665}, {415, 635}, {510, 875}, {560, 365}, {300, 465},
+        {520, 585}, {480, 415}, {835, 625}, {975, 580}, {1215, 245},
+        {1320, 315}, {1250, 400}, {660, 180}, {410, 250}, {420, 555},
+        {575, 665}, {1150, 1160}, {700, 580}, {685, 595}, {685, 610},
+        {770, 610}, {795, 645}, {720, 635}, {760, 650}, {475, 960},
+        {95, 260}, {875, 920}, {700, 500}, {555, 815}, {830, 485},
+        {1170, 65}, {830, 610}, {605, 625}, {595, 360}, {1340, 725},
+        {1740, 245}
+};
+
+double total_distance(const vector<int>& route, const vector<pair<int, int>>& tsp_instance) {
+    int n = route.size();
+    double total_dist = 0.0;
+    for (int i = 0; i < n; i++) {
+        int j = (i + 1) % n;
+        pair<int, int> city_i = tsp_instance[route[i]];
+        pair<int, int> city_j = tsp_instance[route[j]];
+        total_dist += sqrt(pow(city_i.first - city_j.first, 2) + pow(city_i.second - city_j.second, 2));
+    }
+    return total_dist;
+}
+
+bool cmp(const vector<int>& route1, const vector<int>& route2) {
+    return total_distance(route1, berlin52) < total_distance(route2, berlin52);
+}
+
+vector<vector<int>> selection(const vector<vector<int>>& population, const string& option) {
+    if (option == "random") {
+        int r = rand() % POPULATION_SIZE;
+        return {population[r]};
+    }
+    if (option == "roulette") {
+        double total_fitness = 0;
+        for (int i = 0; i < POPULATION_SIZE; ++i) {
+            total_fitness += total_distance(population[i], berlin52);
+        }
+        double r = rand() / (double) RAND_MAX * total_fitness;
+        double partial_sum = 0.0;
+        for (int i = 0; i < POPULATION_SIZE; i++) {
+            partial_sum += total_distance(population[i], berlin52);
+            if (partial_sum >= r) {
+                return {population[i]};
+            }
+        }
+        return {population[POPULATION_SIZE - 1]};
+    }
+}
+
+vector<vector<int>> crossover(vector<int> x, vector<int> y) {
+    vector<vector<int>> child(2, vector<int>(x.size()));
+
+    int index1 = rand() % (x.size()-1) ;
+    int index2 = rand() % (x.size()-1) ;
+    int startIndex = min(index1,index2);
+    int endIndex = max(index1,index2);
+
+    vector<int> takenCities_ids;
+
+    // Recopier la partie du père du croisement
+    for (int i = startIndex; i <= endIndex; i++) {
+        child[0][i] = x[i];
+        takenCities_ids.push_back(x[i]);
+    }
+
+    int j = 0;
+    //Ajout des autres villes selon leur ordre du parent y
+    for (int i = 0; i < y.size(); i++) {
+        if (j == startIndex) {
+            j = endIndex + 1;
+        }
+
+        if (find(takenCities_ids.begin(), takenCities_ids.end(), y[i]) == takenCities_ids.end()) {
+            child[0][j] = y[i];
+            j++;
+        }
+    }
+    child[1] = y;
+    return child;
+}
+
+void mutation(vector<vector<int>>& x, string option) {
+    int index1 = rand() % x.size();
+    int index2 = rand() % x.size();
+    if (option == "singleSwap") {
+        std::swap(x[index1], x[index2]);
+    }
+    if (option == "2optSwap") {
+        reverse(begin(x) + index1 + 1, begin(x) + index2 + 1);
+    }
+}
+
+double averagePopulationFitness(const vector<vector<int>>& population){
+    double total = 0.0;
+    for (int i = 0; i < POPULATION_SIZE; ++i) {
+        total += total_distance(population[i], berlin52);
+    }
+    double trueAvg = total / POPULATION_SIZE;
+    return trueAvg;
+}
+
+void genetic_algorithm() {
+    const int NUM_GENERATIONS = 1000;
+    const double MUTATION_RATE = 0.1;
+
+
+    vector<vector<int>> population(POPULATION_SIZE, vector<int>(berlin52.size()));
+    for (int i = 0; i < POPULATION_SIZE; i++) {
+        for (int j = 0; j < berlin52.size(); j++) {
+            population[i][j] = j;
+        }
+        random_shuffle(population[i].begin(), population[i].end());
+    }
+
+    vector<int> best_individual;
+    double best_fitness = numeric_limits<double>::max();
+
+    for (int g = 0; g < NUM_GENERATIONS; g++) {
+        // Selection
+        vector<vector<int>> parents;
+        for (int i = 0; i < 2; i++) {
+            parents.push_back(selection(population, "roulette")[0]);
+        }
+
+        vector<vector<int>> offspring = crossover(parents[0], parents[1]);
+
+        if (rand() / (double)RAND_MAX < MUTATION_RATE) {
+            mutation(offspring, "2optSwap");
+        }
+
+        population.insert(population.end(), offspring.begin(), offspring.end());
+
+        sort(population.begin(), population.end(), cmp);
+
+        double current_fitness = total_distance(population[0], berlin52);
+        if (current_fitness < best_fitness) {
+            best_individual = population[0];
+            best_fitness = current_fitness;
+        }
+
+        population.resize(POPULATION_SIZE);
+
+        double avg_fitness = averagePopulationFitness(population);
+        //cout << "Generation " << g + 1 << ", Average Fitness: " << avg_fitness << ", Best Fitness: " << best_fitness << endl;
+    }
+
+    cout << "Best Path: ";
+    for (int i = 0; i < best_individual.size(); i++) {
+        cout << best_individual[i] << " ";
+    }
+    std::cout << "\n Total distance: \033[32m" << total_distance(best_individual, berlin52) << "\033[0m\n";
+    cout << endl;
+
+}
+
+
+int main() {
+    srand(time(nullptr));
+
+    cout << "\033[32m           Algorithme GENETIQUE (GENETIC)        \n\033[0m" << endl;
+    cout << "\033[32m-------------------Berlin52----------------------\n\033[0m" << endl;
+    genetic_algorithm();
+
+    return 0;
+}

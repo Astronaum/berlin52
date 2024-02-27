@@ -1,0 +1,96 @@
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <cmath>
+#include <random>
+#include <iostream>
+#include <algorithm>
+#include <ctime>
+
+using namespace std;
+
+// Instance berlin52
+vector<pair<int, int>> berlin52 = {
+    {565, 575}, {25, 185}, {345, 750}, {945, 685}, {845, 655}, {880, 660},
+    {25, 230}, {525, 1000}, {580, 1175}, {650, 1130}, {1605, 620},
+    {1220, 580}, {1465, 200}, {1530, 5}, {845, 680}, {725, 370},
+    {145, 665}, {415, 635}, {510, 875}, {560, 365}, {300, 465},
+    {520, 585}, {480, 415}, {835, 625}, {975, 580}, {1215, 245},
+    {1320, 315}, {1250, 400}, {660, 180}, {410, 250}, {420, 555},
+    {575, 665}, {1150, 1160}, {700, 580}, {685, 595}, {685, 610},
+    {770, 610}, {795, 645}, {720, 635}, {760, 650}, {475, 960},
+    {95, 260}, {875, 920}, {700, 500}, {555, 815}, {830, 485},
+    {1170, 65}, {830, 610}, {605, 625}, {595, 360}, {1340, 725},
+    {1740, 245}
+};
+// calcul de la distance d'un circuit
+double cost(const vector<int>& route) {
+    double total_distance = 0.0;
+    for (int i = 0; i < route.size(); i++) {
+        int x1 = berlin52[route[i]].first;
+        int y1 = berlin52[route[i]].second;
+        int x2 = berlin52[route[(i+1)%route.size()]].first;
+        int y2 = berlin52[route[(i+1)%route.size()]].second;
+        double distance = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+        total_distance += distance;
+    }
+    return total_distance;
+}
+
+// Implementation de l'algorithme
+vector<int> simulated_annealing(double temperature, double cooling_rate) {
+    // Initialiser la route courante à une route aléatoire
+    vector<int> current_route(berlin52.size());
+    for (int i = 0; i < current_route.size(); i++) {
+        current_route[i] = i;
+    }
+    random_shuffle(current_route.begin(), current_route.end());
+    // Initialiser la meilleur route avec la courante
+    vector<int> best_route(current_route);
+    // Paramètre du générateur de nombre aléatoires
+    random_device rd;
+    mt19937 rng(rd());
+    uniform_int_distribution<int> uni(0, current_route.size()-1);
+    uniform_real_distribution<double> unif(0.0, 1.0);
+    // Répéter jusqu'à que la température est très faible
+    while (temperature > 1e-6) {
+        // la route généré voisine
+        int i = uni(rng);
+        int j = uni(rng);
+        vector<int> new_route(current_route);
+        swap(new_route[i], new_route[j]);
+        // Variation du cout entre la nouvelle route et celle courante
+        double delta_cost = cost(new_route) - cost(current_route);
+        // Quand retenir une route
+        if (delta_cost < 0.0 || exp(-delta_cost/temperature) > unif(rng)) {
+            current_route = new_route;
+        }
+        // Mise à jour de la meilleur route
+        if (cost(current_route) < cost(best_route)) {
+            best_route = current_route;
+        }
+        // Diminuer la temperature
+        temperature *= cooling_rate;
+    }
+    return best_route;
+}
+
+int main() {
+
+    srand(time(nullptr));
+    cout << "\033[32mAlgorithme RECUIT SIMULE (SIMULATED ANNEALING)\n\033[0m" << endl;
+    cout << "\033[32m-------------------Berlin52----------------------\n\033[0m" << endl;
+    // Set the initial temperature and cooling rate
+    double temperature = 100.0;
+    double cooling_rate = 0.99;
+    // Run the simulated annealing algorithm
+    vector<int> best_route = simulated_annealing(temperature, cooling_rate);
+    // Print the best route and its cost
+    cout << "Best route: ";
+    for (int i = 0; i < best_route.size(); i++) {
+        cout << best_route[i] << " ";
+    }
+    cout << endl;
+    cout << "Total distance : \033[32m" << cost(best_route) << "\033[0m\n";
+    return 0;
+}

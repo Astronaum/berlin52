@@ -1,0 +1,31 @@
+# depslib dependency file v1.0
+1683287165 source:c:\users\astro\desktop\sa\main.cpp
+	<iostream>
+	<vector>
+	<utility>
+	<cmath>
+	<random>
+	<iostream>
+	<algorithm>
+	<ctime>
+
+1683560545 source:c:\users\astro\desktop\recuit simule\main.cpp
+	<iostream>
+	<vector>
+	<utility>
+	<cmath>
+	<random>
+	<iostream>
+	<algorithm>
+	<ctime>
+
+1683560545 source:c:\users\astro\desktop\miniprojet02_aymane_kabba\recuit simule\main.cpp
+	<iostream>
+	<vector>
+	<utility>
+	<cmath>
+	<random>
+	<iostream>
+	<algorithm>
+	<ctime>
+
